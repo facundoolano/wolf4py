@@ -3,6 +3,7 @@ import ctypes
 import time
 
 from sdl2 import *
+import sdl2.ext
 
 import id_cache as id_ca
 import id_video_high as id_vh
@@ -21,12 +22,19 @@ def main():
     # SDL_BlitSurface(image, None, windowsurface, None)
     # SDL_UpdateWindowSurface(window)
 
-    quit_()
+    running = True
+    while running:
+        events = sdl2.ext.get_events()
+        for event in events:
+            if event.type == sdl2.SDL_QUIT:
+                running = False
+                break
+        # id_vh.update_screen()
 
     return 0
 
 def init_game():
-    SDL_Init(SDL_INIT_VIDEO)
+    sdl2.ext.init()
     id_vl.set_vga_plane_mode()
 
     id_ca.startup()
@@ -36,10 +44,9 @@ def demo_loop():
     id_vh.update_screen()
 
     # TODO should wait for input instead
-    time.sleep(20)
 
 def quit_():
-    SDL_DestroyWindow(id_vl.window)
+    SDL_DestroyWindow(id_vl.state.window)
 
     SDL_Quit()
 

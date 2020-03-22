@@ -1,6 +1,10 @@
 # From ID_VL.H / ID_VL.C
 # Low-level video API
 from sdl2 import *
+import sdl2
+import sdl2.ext
+import ctypes
+from palette import PALETTE
 
 class VideoState():
     # TODO snake casing
@@ -24,19 +28,26 @@ state = VideoState()
 def set_vga_plane_mode():
     width, height = state.screenWidth, state.screenHeight
 
-    state.window = SDL_CreateWindow(b'Wolfenstein 3D',
-                                    SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                                    width, height, SDL_WINDOW_ALLOW_HIGHDPI)
-    state.renderer = SDL_CreateRenderer(state.window, -1, 0)
-    state.texture = SDL_CreateTexture(state.renderer, SDL_PIXELFORMAT_ABGR8888,
-                                SDL_TEXTUREACCESS_STREAMING, width, height)
-    state.screen = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0)
+    state.window = sdl2.ext.Window("Pixel Access", size=(width, height), flags=SDL_WINDOW_ALLOW_HIGHDPI)
+    state.window.show()
+    # state.window = SDL_CreateWindow(b'Wolfenstein 3D',
+    #                                 SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+    #                                 width, height, SDL_WINDOW_ALLOW_HIGHDPI)
+    # state.renderer = SDL_CreateRenderer(state.window, -1, 0)
+    # state.texture = SDL_CreateTexture(state.renderer, SDL_PIXELFORMAT_ABGR8888,
+    #                             SDL_TEXTUREACCESS_STREAMING, width, height)
+    # state.screen = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0)
 
     # FIXME load palette?
     # ?
     # memcpy(curpal, gamepal, sizeof(SDL_Color) * 256);
 
-    state.screenBuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 8, 0, 0, 0, 0);
+    # state.screenBuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 8, 0, 0, 0, 0);
+
+
+    # sdlpal = SDL_AllocPalette(256)
+    # SDL_SetPaletteColors(sdlpal, gamepal, 0, 256);
+    # SDL_SetSurfacePalette(window.get_surface(), sdlpal);
 
     # SDL_Palette *sdlpal = SDL_AllocPalette(256);
     # SDL_SetPaletteColors(sdlpal, gamepal, 0, 256);
@@ -45,8 +56,8 @@ def set_vga_plane_mode():
     # screenPitch = screen->pitch;
     # bufferPitch = screenBuffer->pitch;
 
-    state.cur_surface = state.screenBuffer
-    state.cur_pitch = state.screenBuffer.contents.pitch
+    # state.cur_surface = state.screenBuffer
+    # state.cur_pitch = state.screenBuffer.contents.pitch
 
     state.scaleFactor = min(width // 320, height // 200)
 
@@ -57,42 +68,37 @@ def set_vga_plane_mode():
 
 # http://sandervanderburg.blogspot.ro/2014/05/rendering-8-bit-palettized-surfaces-in.html
 def flip():
-    pixels = ctypes.c_void_p()
-    pitch = ctypes.c_int()
-    SDL_LockTexture(texture, None, ctypes.byref(pixels), ctypes.byref(pitch))
-    SDL_ConvertPixels(state.screen.w, state.screen.h, screen.format.format,
-                      state.screen.pixels, state.screen.pitch, SDL_PIXELFORMAT_ABGR8888,
-                      pixels, pitch);
+    # pixels = ctypes.c_void_p()
+    # pitch = ctypes.c_int()
+    # SDL_LockTexture(state.texture, None, ctypes.byref(pixels), ctypes.byref(pitch))
+    # SDL_ConvertPixels(state.screen.contents.w,
+    #                   state.screen.contents.h,
+    #                   state.screen.contents.format.contents.format,
+    #                   state.screen.contents.pixels,
+    #                   state.screen.contents.pitch, SDL_PIXELFORMAT_ABGR8888,
+    #                   pixels, pitch);
 
-    SDL_UnlockTexture(state.texture)
-    SDL_RenderCopy(state.renderer, state.texture, None, None)
-    SDL_RenderPresent(state.renderer)
+    # SDL_UnlockTexture(state.texture)
+    # SDL_RenderCopy(state.renderer, state.texture, None, None)
+    # SDL_RenderPresent(state.renderer)
+    pass
 
 def draw_surface(pic_bytes):
-    vbuf = lock_surface(state.cur_surface);
+    surface = state.window.get_surface()
+    sdl2.ext.fill(surface, sdl2.ext.Color(0,0,0))
+    pixelview = sdl2.ext.pixels2d(surface)
 
-    scx, scy = 0, 0
+    scy = 0
     for y in range(200):
+        scx = 0
         for x in range(320):
-
             col = pic_bytes[(y * 80 + (x >> 2)) + (x & 3) * 80 * 200]
             for i in range(state.scaleFactor):
                 for j in range(state.scaleFactor):
-                    vbuf[(scy + i) * state.cur_pitch + scx + j] = col
+                    # vbuf[(scy + i) * state.cur_pitch + scx + j] = col
+                    pixelview[scx + j][scy + i] = PALETTE[col]
 
             scx += state.scaleFactor
         scy += state.scaleFactor
 
-    unlock_surface(state.cur_surface);
-
-
-def lock_surface(surface):
-    # TODO maybe keep null checks?
-    if SDL_MUSTLOCK(surface.contents):
-        SDL_LockSurface(surface)
-
-    return surface.contents.pixels
-
-def unlock_surface(surface):
-    if SDL_MUSTLOCK(surface.contents):
-        SDL_UnlockSurface(surface)
+    del pixelview

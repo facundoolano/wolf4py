@@ -6,5 +6,8 @@ import id_video_low as vl
 
 # TODO this could probably live in vl itself
 def update_screen():
-    SDL_BlitSurface(vl.screenBuffer, None, vl.screen, None);
-    vl.flip()
+    vl.state.window.refresh()
+    # SDL_BlitSurface(vl.state.screenBuffer, None, vl.state.screen, None);
+    # vl.flip()
+    # # ?
+    # SDL_UpdateWindowSurface(vl.state.window)
