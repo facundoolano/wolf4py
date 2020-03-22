@@ -1,32 +1,48 @@
-from sdl2 import *
 import sys
 import ctypes
+import time
 
+from sdl2 import *
+
+import id_cache as id_ca
+import id_video_high as id_vh
+import id_video_low as id_vl
+import gfxv_wl6 as gfx
+
+# TODO add import sort, pep8 and whatnot
 
 def main():
-    SDL_Init(SDL_INIT_VIDEO)
-    window = SDL_CreateWindow(b"Hello World",
-                              SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                              592, 460, SDL_WINDOW_SHOWN)
-    windowsurface = SDL_GetWindowSurface(window)
+    init_game()
 
-    image = SDL_LoadBMP(b"wolf3d.bmp")
-    SDL_BlitSurface(image, None, windowsurface, None)
+    # TODO remove sdl hello world stuff
 
-    SDL_UpdateWindowSurface(window)
-    SDL_FreeSurface(image)
+    demo_loop()
 
-    running = True
-    event = SDL_Event()
-    while running:
-        while SDL_PollEvent(ctypes.byref(event)) != 0:
-            if event.type == SDL_QUIT:
-                running = False
-                break
+    # SDL_BlitSurface(image, None, windowsurface, None)
+    # SDL_UpdateWindowSurface(window)
 
-    SDL_DestroyWindow(window)
-    SDL_Quit()
+    quit_()
+
     return 0
+
+def init_game():
+    SDL_Init(SDL_INIT_VIDEO)
+    id_vl.set_vga_plane_mode()
+
+    id_ca.startup()
+
+def demo_loop():
+    id_ca.cache_screen(gfx.TITLEPIC)
+    id_vh.update_screen()
+
+    # TODO should wait for input instead
+    time.sleep(20)
+
+def quit_():
+    SDL_DestroyWindow(id_vl.window)
+
+    SDL_Quit()
+
 
 if __name__ == "__main__":
     sys.exit(main())
