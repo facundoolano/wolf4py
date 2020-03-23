@@ -30,10 +30,11 @@ def main():
 
 def init_game():
     sdl2.ext.init()
-    id_vl.set_vga_plane_mode()
+    id_vl.startup()
 
     id_ca.startup()
 
+# TODO rename, there's no demo here
 def demo_loop():
     id_ca.cache_screen(gfx.TITLEPIC)
     id_vh.update_screen()

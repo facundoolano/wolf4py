@@ -8,13 +8,14 @@ class HuffNode(ctypes.Structure):
     _fields_ = [('bit0', ctypes.c_ushort),
                 ('bit1', ctypes.c_ushort)]
 
+def datafile(filename):
+    return open('data/{}.WL6'.format(filename), 'rb')
 
-# FIXME remove hardcoded dirs/filenames
 class CacheState():
     grstarts = []
     grhuffman = []
 
-    grhandle = open('data/VGAGRAPH.WL6', 'rb')
+    grhandle = datafile('VGAGRAPH')
 
 state = CacheState()
 
@@ -26,6 +27,7 @@ def startup():
 def shutdown():
     pass
 
+# TODO rename load_picture
 def cache_screen(chunk):
     pos = state.grstarts[chunk]
     next_ = chunk + 1
@@ -43,7 +45,13 @@ def cache_screen(chunk):
     source = state.grhandle.read(compressed - ctypes.sizeof(length_t))
 
     pic = huff_expand(source, expanded_length)
+    # TODO better to return bytes and call the drawing elsewhere
     vl.draw_surface(pic)
+
+# TODO rename load_map
+def cache_map(mapnum):
+    pass
+
 
 ## internal functions
 
@@ -51,13 +59,13 @@ def setup_map_file():
     pass
 
 def setup_graphics_file():
-    with open('data/VGADICT.WL6', 'rb') as handle:
+    with datafile('VGADICT') as handle:
         node = HuffNode()
         while handle.readinto(node):
             state.grhuffman.append(node)
             node = HuffNode()
 
-    with open('data/VGAHEAD.WL6', 'rb') as handle:
+    with datafile('VGAHEAD') as handle:
         data = handle.read()
 
     di = 0
