@@ -1,4 +1,3 @@
-import sdl2.ext
 import sdl2
 
 COLORS = [
@@ -56,5 +55,5 @@ COLORS = [
  ( 38,  0, 34)
 ]
 
-# (r)*255/63, (g)*255/63, (b)*255/63, 255
+# for some reason had to invert the alpha item to get it right
 PALETTE = [sdl2.ext.Color(255, r*255/63, g*255/63, b*255/63) for (r, g, b) in COLORS]

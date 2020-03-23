@@ -14,14 +14,9 @@ import gfxv_wl6 as gfx
 
 def main():
     init_game()
-
-    # TODO remove sdl hello world stuff
-
     demo_loop()
 
-    # SDL_BlitSurface(image, None, windowsurface, None)
-    # SDL_UpdateWindowSurface(window)
-
+    # TODO remove this event handling from here
     running = True
     while running:
         events = sdl2.ext.get_events()
@@ -29,8 +24,8 @@ def main():
             if event.type == sdl2.SDL_QUIT:
                 running = False
                 break
-        # id_vh.update_screen()
 
+    quit_()
     return 0
 
 def init_game():
@@ -43,11 +38,8 @@ def demo_loop():
     id_ca.cache_screen(gfx.TITLEPIC)
     id_vh.update_screen()
 
-    # TODO should wait for input instead
-
 def quit_():
     SDL_DestroyWindow(id_vl.state.window)
-
     SDL_Quit()
 
 
