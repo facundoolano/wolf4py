@@ -8,14 +8,28 @@ class HuffNode(ctypes.Structure):
     _fields_ = [('bit0', ctypes.c_ushort),
                 ('bit1', ctypes.c_ushort)]
 
+class MapHeader(ctypes.Structure):
+    _fields_ = [('plane_start', ctypes.c_int32 * 3),
+                ('plane_length', ctypes.c_ushort * 3),
+                ('width', ctypes.c_ushort),
+                ('height', ctypes.c_ushort),
+                ('name', ctypes.c_char * 16)]
+
 def datafile(filename):
     return open('data/{}.WL6'.format(filename), 'rb')
 
+# TODO change names to more readable ones (and keep the others for reference)
 class CacheState():
+    # graphics
     grstarts = []
     grhuffman = []
-
     grhandle = datafile('VGAGRAPH')
+
+    # map
+    RLEWtag = None
+    maphandle = datafile('GAMEMAPS')
+    mapheaderseg = []
+    mapsegs = []
 
 state = CacheState()
 
@@ -39,10 +53,8 @@ def cache_screen(chunk):
 
     # first part of the segment contains the expanded length
     # TODO maybe move into huffexpand?
-    length_t = ctypes.c_int32()
-    state.grhandle.readinto(length_t)
-    expanded_length = length_t.value
-    source = state.grhandle.read(compressed - ctypes.sizeof(length_t))
+    bytes_read, expanded_length = readctype(state.grhandle)
+    source = state.grhandle.read(compressed - bytes_read)
 
     pic = huff_expand(source, expanded_length)
     # TODO better to return bytes and call the drawing elsewhere
@@ -56,7 +68,23 @@ def cache_map(mapnum):
 ## internal functions
 
 def setup_map_file():
-    pass
+    with datafile('MAPHEAD') as handle:
+        bytes_read, state.RLEWtag = readctype(handle)
+        header_offsets = []
+        while bytes_read:
+            bytes_read, offset = readctype(handle)
+            header_offsets.append(offset)
+
+    for pos in header_offsets:
+        if pos < 0:
+            # $FFFFFFFF start is a sparse map
+            continue
+
+        state.maphandle.seek(pos)
+        map_header = MapHeader()
+        state.maphandle.readinto(map_header)
+        state.mapheaderseg.append(map_header)
+
 
 def setup_graphics_file():
     with datafile('VGADICT') as handle:
@@ -112,3 +140,8 @@ def huff_expand(source, length):
             huffptr = nodeval - 256
 
     return dest
+
+def readctype(handle, type_=ctypes.c_int32):
+    var = type_()
+    bytes_read = handle.readinto(var)
+    return bytes_read, var.value
