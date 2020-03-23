@@ -57,8 +57,4 @@ COLORS = [
 ]
 
 # (r)*255/63, (g)*255/63, (b)*255/63, 255
-# FIXME YTHO
-PALETTE = [sdl2.ext.Color(r*255/63, g*255/63, b*255/63) for (r, g, b) in COLORS]
-
-# SDL_COLORS = [sdl2.SDL_Color(r*255/63, g*255/63, b*255/63) for (r, g, b) in COLORS]
-# print("PALETTE is", len(PALETTE))
+PALETTE = [sdl2.ext.Color(255, r*255/63, g*255/63, b*255/63) for (r, g, b) in COLORS]

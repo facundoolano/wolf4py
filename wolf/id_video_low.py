@@ -28,30 +28,27 @@ state = VideoState()
 def set_vga_plane_mode():
     width, height = state.screenWidth, state.screenHeight
 
-    state.window = sdl2.ext.Window("Pixel Access", size=(width, height), flags=SDL_WINDOW_ALLOW_HIGHDPI)
-    state.window.show()
-    # state.window = SDL_CreateWindow(b'Wolfenstein 3D',
-    #                                 SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-    #                                 width, height, SDL_WINDOW_ALLOW_HIGHDPI)
-    # state.renderer = SDL_CreateRenderer(state.window, -1, 0)
-    # state.texture = SDL_CreateTexture(state.renderer, SDL_PIXELFORMAT_ABGR8888,
-    #                             SDL_TEXTUREACCESS_STREAMING, width, height)
-    # state.screen = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0)
+    # state.window = sdl2.ext.Window("Pixel Access", size=(width, height), flags=SDL_WINDOW_ALLOW_HIGHDPI)
+    # state.window.show()
+    state.window = SDL_CreateWindow(b'Wolfenstein 3D',
+                                    SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                                    width, height, SDL_WINDOW_ALLOW_HIGHDPI)
+    state.renderer = SDL_CreateRenderer(state.window, -1, 0)
+    state.texture = SDL_CreateTexture(state.renderer, SDL_PIXELFORMAT_ARGB8888,
+                                SDL_TEXTUREACCESS_STREAMING, width, height)
+    state.screen = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0)
 
     # FIXME load palette?
     # ?
     # memcpy(curpal, gamepal, sizeof(SDL_Color) * 256);
 
-    # state.screenBuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 8, 0, 0, 0, 0);
+    # FIXME 32 works, 8 not
+    # If depth is 4 or 8 bits, an empty palette is allocated for the surface. If depth is greater than 8 bits, the pixel format is set using the [RGBA]mask parameters.
+    state.screenBuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, 0, 0, 0, 0);
 
-
-    # sdlpal = SDL_AllocPalette(256)
-    # SDL_SetPaletteColors(sdlpal, gamepal, 0, 256);
-    # SDL_SetSurfacePalette(window.get_surface(), sdlpal);
 
     # SDL_Palette *sdlpal = SDL_AllocPalette(256);
     # SDL_SetPaletteColors(sdlpal, gamepal, 0, 256);
-    # SDL_SetSurfacePalette(screenBuffer, sdlpal);
 
     # screenPitch = screen->pitch;
     # bufferPitch = screenBuffer->pitch;
@@ -68,24 +65,24 @@ def set_vga_plane_mode():
 
 # http://sandervanderburg.blogspot.ro/2014/05/rendering-8-bit-palettized-surfaces-in.html
 def flip():
-    # pixels = ctypes.c_void_p()
-    # pitch = ctypes.c_int()
-    # SDL_LockTexture(state.texture, None, ctypes.byref(pixels), ctypes.byref(pitch))
-    # SDL_ConvertPixels(state.screen.contents.w,
-    #                   state.screen.contents.h,
-    #                   state.screen.contents.format.contents.format,
-    #                   state.screen.contents.pixels,
-    #                   state.screen.contents.pitch, SDL_PIXELFORMAT_ABGR8888,
-    #                   pixels, pitch);
+    pixels = ctypes.c_void_p()
+    pitch = ctypes.c_int()
+    SDL_LockTexture(state.texture, None, ctypes.byref(pixels), ctypes.byref(pitch))
+    SDL_ConvertPixels(state.screen.contents.w,
+                      state.screen.contents.h,
+                      state.screen.contents.format.contents.format,
+                      state.screen.contents.pixels,
+                      state.screen.contents.pitch, SDL_PIXELFORMAT_ARGB8888,
+                      pixels, pitch);
 
-    # SDL_UnlockTexture(state.texture)
-    # SDL_RenderCopy(state.renderer, state.texture, None, None)
-    # SDL_RenderPresent(state.renderer)
-    pass
+    SDL_UnlockTexture(state.texture)
+    SDL_RenderCopy(state.renderer, state.texture, None, None)
+    SDL_RenderPresent(state.renderer)
 
 def draw_surface(pic_bytes):
-    surface = state.window.get_surface()
-    sdl2.ext.fill(surface, sdl2.ext.Color(0,0,0))
+    # surface = state.window.get_surface()
+    # sdl2.ext.fill(surface, sdl2.ext.Color(0,0,0))
+    surface = state.screenBuffer.contents
     pixelview = sdl2.ext.pixels2d(surface)
 
     scy = 0
