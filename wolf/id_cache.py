@@ -3,6 +3,8 @@
 import id_video_low as vl
 import gfxv_wl6 as gfx
 import ctypes
+NUM_MAPS = 60
+MAP_PLANES = 2
 
 class HuffNode(ctypes.Structure):
     _fields_ = [('bit0', ctypes.c_ushort),
@@ -69,10 +71,13 @@ def cache_map(mapnum):
 
 def setup_map_file():
     with datafile('MAPHEAD') as handle:
-        bytes_read, state.RLEWtag = readctype(handle)
+        bytes_read, state.RLEWtag = readctype(handle, ctypes.c_ushort)
         header_offsets = []
-        while bytes_read:
+
+        length = NUM_MAPS * 4
+        while length:
             bytes_read, offset = readctype(handle)
+            length -= bytes_read
             header_offsets.append(offset)
 
     for pos in header_offsets:
