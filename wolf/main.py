@@ -8,6 +8,7 @@ import sdl2.ext
 import id_cache as id_ca
 import id_video_high as id_vh
 import id_video_low as id_vl
+import wl_game
 import gfxv_wl6 as gfx
 
 # TODO add import sort, pep8 and whatnot
@@ -38,6 +39,8 @@ def init_game():
 def demo_loop():
     id_ca.cache_screen(gfx.TITLEPIC)
     id_vh.update_screen()
+
+    wl_game.loop()
 
 def quit_():
     SDL_DestroyWindow(id_vl.state.window)

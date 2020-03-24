@@ -3,6 +3,10 @@
 import id_video_low as vl
 import gfxv_wl6 as gfx
 import ctypes
+import struct
+
+import wl_def
+
 NUM_MAPS = 60
 MAP_PLANES = 2
 
@@ -64,8 +68,20 @@ def cache_screen(chunk):
 
 # TODO rename load_map
 def cache_map(mapnum):
-    pass
 
+    for plane in range(MAP_PLANES):
+        pos = state.mapheaderseg[mapnum].plane_start[plane];
+        compressed = state.mapheaderseg[mapnum].plane_length[plane];
+
+        # unhuffman, then unRLEW
+        # The huffman'd chunk has a two byte expanded length first
+        # The resulting RLEW chunk also does, even though it's not really needed
+        state.maphandle.seek(pos)
+        bytes_read, expanded_length = readctype(state.maphandle, ctypes.c_ushort)
+        source = state.maphandle.read(compressed - bytes_read)
+
+        source_expanded = carmack_expand(source, expanded_length)
+        state.mapsegs.append(rlew_expand(source_expanded, wl_def.MAP_AREA * 2))
 
 ## internal functions
 
@@ -113,6 +129,7 @@ def setup_graphics_file():
 def setup_audio_file():
     pass
 
+
 def huff_expand(source, length):
     dest = bytearray()
     headptr = 254         # head node is always node 254
@@ -146,7 +163,62 @@ def huff_expand(source, length):
 
     return dest
 
+def carmack_expand(source, length):
+    NEAR_TAG = 0xa7
+    FAR_TAG = 0xa8
+
+    dest = bytearray()
+
+    def read_word(s):
+        # the source has words in little endian format
+        ch, = struct.unpack_from('<H', s)
+        return s[2:], ch
+
+    def write_word(word):
+        dest.extend(ch.to_bytes(length=2, byteorder='big'))
+
+    length = length // 2
+
+    while length > 0:
+        source, ch = read_word(source)
+        ch_high = ch >> 8
+
+        if ch_high in (NEAR_TAG, FAR_TAG):
+            count = ch & 0xff;
+            if not count:
+                # have to insert a word containing the tag byte
+                ch |= source[0]
+                source = source[1:]
+                write_word(ch)
+
+                length -= 1;
+            elif ch_high == NEAR_TAG:
+                offset = source[0]
+                source = source[1:]
+                length -= count;
+
+                if length >= 0:
+                    dest += dest[-offset : -offset + count]
+            elif ch_high == FAR_TAG:
+                source, offset = read_word(source)
+                length -= count
+                if length >= 0:
+                    dest += dest[offset : offset + count]
+
+        else:
+            write_word(ch)
+            length -= 1;
+
+    return dest
+
+def rlew_expand(source, length):
+    pass
+
 def readctype(handle, type_=ctypes.c_int32):
+    """
+    Read into a ctypes var of the given type, return the amount of bytes read
+    and its value.
+    """
     var = type_()
     bytes_read = handle.readinto(var)
     return bytes_read, var.value
