@@ -81,7 +81,7 @@ def cache_map(mapnum):
         source = state.maphandle.read(compressed - bytes_read)
 
         source_expanded = carmack_expand(source, expanded_length)
-        state.mapsegs.append(rlew_expand(source_expanded, wl_def.MAP_AREA * 2))
+        state.mapsegs.append(rlew_expand(source_expanded[2:], wl_def.MAP_AREA * 2))
 
 ## internal functions
 
@@ -167,43 +167,43 @@ def carmack_expand(source, length):
     NEAR_TAG = 0xa7
     FAR_TAG = 0xa8
 
+    length = length // 2
+    source = bytearray(source)
     dest = bytearray()
 
-    def read_word(s):
+    def read_word():
         # the source has words in little endian format
-        ch, = struct.unpack_from('<H', s)
-        return s[2:], ch
+        ch, = struct.unpack_from('<H', source)
+        source.pop(0)
+        source.pop(0)
+        return ch
 
     def write_word(word):
-        dest.extend(ch.to_bytes(length=2, byteorder='big'))
-
-    length = length // 2
+        dest.extend(word.to_bytes(length=2, byteorder='big'))
 
     while length > 0:
-        source, ch = read_word(source)
+        ch = read_word()
         ch_high = ch >> 8
 
         if ch_high in (NEAR_TAG, FAR_TAG):
             count = ch & 0xff;
             if not count:
                 # have to insert a word containing the tag byte
-                ch |= source[0]
-                source = source[1:]
+                ch |= source.pop(0)
                 write_word(ch)
 
                 length -= 1;
             elif ch_high == NEAR_TAG:
-                offset = source[0]
-                source = source[1:]
+                offset = source.pop(0)
                 length -= count;
 
                 if length >= 0:
-                    dest += dest[-offset : -offset + count]
+                    dest += dest[-offset*2 : (-offset + count)*2]
             elif ch_high == FAR_TAG:
-                source, offset = read_word(source)
+                offset = read_word()
                 length -= count
                 if length >= 0:
-                    dest += dest[offset : offset + count]
+                    dest += dest[offset*2 : (offset + count) *2]
 
         else:
             write_word(ch)
