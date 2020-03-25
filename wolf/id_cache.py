@@ -198,7 +198,12 @@ def carmack_expand(source, length):
                 length -= count;
 
                 if length >= 0:
-                    dest += dest[-offset*2 : (-offset + count)*2]
+                    start = -offset * 2
+                    end = (-offset + count) * 2
+                    if (-offset + count) >= 0:
+                        end = len(dest)
+                    dest += dest[start : end]
+
             elif ch_high == FAR_TAG:
                 offset = read_word()
                 length -= count
@@ -212,7 +217,34 @@ def carmack_expand(source, length):
     return dest
 
 def rlew_expand(source, length):
-    pass
+    dest = bytearray()
+
+    # FIXME duplicated
+    def read_word():
+        # the source has words in little endian format
+        ch, = struct.unpack_from('>H', source)
+        source.pop(0)
+        source.pop(0)
+        return ch
+
+    def write_word(word):
+        dest.extend(word.to_bytes(length=2, byteorder='big'))
+
+    while len(dest) < length:
+
+        value = read_word()
+        if value != state.RLEWtag:
+            # uncompressed
+            write_word(value)
+        else:
+            # compressed string
+            count = read_word()
+            value = read_word()
+            for i in range(count):
+                write_word(value)
+
+    return dest
+
 
 def readctype(handle, type_=ctypes.c_int32):
     """
