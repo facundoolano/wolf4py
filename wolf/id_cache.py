@@ -171,18 +171,8 @@ def carmack_expand(source, length):
     source = bytearray(source)
     dest = bytearray()
 
-    def read_word():
-        # the source has words in little endian format
-        ch, = struct.unpack_from('<H', source)
-        source.pop(0)
-        source.pop(0)
-        return ch
-
-    def write_word(word):
-        dest.extend(word.to_bytes(length=2, byteorder='big'))
-
     while length > 0:
-        ch = read_word()
+        ch = read_word(source, byteorder='little')
         ch_high = ch >> 8
 
         if ch_high in (NEAR_TAG, FAR_TAG):
@@ -190,7 +180,7 @@ def carmack_expand(source, length):
             if not count:
                 # have to insert a word containing the tag byte
                 ch |= source.pop(0)
-                write_word(ch)
+                write_word(dest, ch)
 
                 length -= 1;
             elif ch_high == NEAR_TAG:
@@ -205,13 +195,13 @@ def carmack_expand(source, length):
                     dest += dest[start : end]
 
             elif ch_high == FAR_TAG:
-                offset = read_word()
+                offset = read_word(source, byteorder='little')
                 length -= count
                 if length >= 0:
                     dest += dest[offset*2 : (offset + count) *2]
 
         else:
-            write_word(ch)
+            write_word(dest, ch)
             length -= 1;
 
     return dest
@@ -219,29 +209,18 @@ def carmack_expand(source, length):
 def rlew_expand(source, length):
     dest = bytearray()
 
-    # FIXME duplicated
-    def read_word():
-        # the source has words in little endian format
-        ch, = struct.unpack_from('>H', source)
-        source.pop(0)
-        source.pop(0)
-        return ch
-
-    def write_word(word):
-        dest.extend(word.to_bytes(length=2, byteorder='big'))
-
     while len(dest) < length:
 
-        value = read_word()
+        value = read_word(source)
         if value != state.RLEWtag:
             # uncompressed
-            write_word(value)
+            write_word(dest, value)
         else:
             # compressed string
-            count = read_word()
-            value = read_word()
+            count = read_word(source)
+            value = read_word(source)
             for i in range(count):
-                write_word(value)
+                write_word(dest, value)
 
     return dest
 
@@ -254,3 +233,18 @@ def readctype(handle, type_=ctypes.c_int32):
     var = type_()
     bytes_read = handle.readinto(var)
     return bytes_read, var.value
+
+def read_word(source, byteorder='big'):
+    """
+    Extract 2 bytes from the source and return them as word according to the
+    given byteorder.
+    """
+    pattern = '<H' if byteorder == 'little' else '>H'
+    ch, = struct.unpack_from(pattern, source)
+    source.pop(0)
+    source.pop(0)
+    return ch
+
+def write_word(dest, word):
+    "Add the 2 bytes of the given word to the end of the bytearray."
+    dest.extend(word.to_bytes(length=2, byteorder='big'))
