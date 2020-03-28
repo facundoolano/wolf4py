@@ -26,6 +26,7 @@ def init_game():
     id_vl.startup()
 
     id_ca.startup()
+    id_vh.new_view_size()
 
 # TODO rename, there's no demo here
 def demo_loop():

@@ -39,6 +39,11 @@ class GameState():
     tilemap = [[0 for _ in range(de.MAP_HEIGHT)]
                for _ in range(de.MAP_WIDTH)]
 
+    @property
+    def map_index(self):
+        return self.mapon + 10 * self.episode
+
+
 state = GameState()
 
 def loop():
@@ -52,7 +57,7 @@ def loop():
 
 def setup_game_level():
     # load the level
-    id_ca.cache_map(state.mapon + 10 * state.episode)
+    id_ca.cache_map(state.map_index)
 
     # copy the wall data to a data segment array
     tiles = iter(id_ca.state.mapsegs[0])

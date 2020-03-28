@@ -16,8 +16,8 @@ class VideoState():
     screen = None
     screenBuffer = None
 
-    screenWidth = 640
-    screenHeight = 400
+    screenWidth = 960
+    screenHeight = 600
     scaleFactor = 2
 
     cur_pitch = None
