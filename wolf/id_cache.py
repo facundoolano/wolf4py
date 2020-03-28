@@ -5,7 +5,7 @@ import gfxv_wl6 as gfx
 import ctypes
 import struct
 
-import wl_def
+import wl_def as de
 
 NUM_MAPS = 60
 MAP_PLANES = 2
@@ -81,7 +81,7 @@ def cache_map(mapnum):
         source = state.maphandle.read(compressed - bytes_read)
 
         source_expanded = carmack_expand(source, expanded_length)
-        state.mapsegs.append(rlew_expand(source_expanded[2:], wl_def.MAP_AREA * 2))
+        state.mapsegs.append(rlew_expand(source_expanded[2:], de.MAP_AREA * 2))
 
 ## internal functions
 

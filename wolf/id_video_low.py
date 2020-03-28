@@ -61,6 +61,7 @@ def flip():
     SDL_RenderCopy(state.renderer, state.texture, None, None)
     SDL_RenderPresent(state.renderer)
 
+# FIXME no needed pitch? does this work with any size?
 def draw_surface(pic_bytes):
     surface = state.screenBuffer.contents
     pixelview = sdl2.ext.pixels2d(surface)
