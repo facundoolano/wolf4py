@@ -38,10 +38,10 @@ def startup():
                                 SDL_TEXTUREACCESS_STREAMING, width, height)
     state.screen = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0)
 
-    # If depth is 4 or 8 bits, an empty palette is allocated for the surface.
-    # If depth is greater than 8 bits, the pixel format is set using the [RGBA]mask parameters.
-    # wolf4sdl uses 8 depth, that didn't work here, using 32
-    state.screenBuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, 0, 0, 0, 0);
+    state.screenBuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 8, 0, 0, 0, 0)
+    sdlpal = SDL_AllocPalette(256);
+    SDL_SetPaletteColors(sdlpal, PALETTE, 0, 256)
+    SDL_SetSurfacePalette(state.screenBuffer, sdlpal);
 
     state.scaleFactor = min(width // 320, height // 200)
 
@@ -73,7 +73,7 @@ def draw_surface(pic_bytes):
             col = pic_bytes[(y * 80 + (x >> 2)) + (x & 3) * 80 * 200]
             for i in range(state.scaleFactor):
                 for j in range(state.scaleFactor):
-                    pixelview[scx + j][scy + i] = PALETTE[col]
+                    pixelview[scx + j][scy + i] = col
 
             scx += state.scaleFactor
         scy += state.scaleFactor

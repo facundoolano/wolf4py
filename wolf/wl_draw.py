@@ -33,8 +33,7 @@ VGA_CEILING = [
 ]
 
 def clear_screen(pixels):
-    ceiling = PALETTE[VGA_CEILING[wl_game.state.map_index]]
-    floor = PALETTE[VGA_FLOOR]
+    ceiling = VGA_CEILING[wl_game.state.map_index]
 
     # write the upper half of the view with ceiling color
     width = id_vh.state.view_width
@@ -47,7 +46,7 @@ def clear_screen(pixels):
     # write the lower half of the view with floor color
     for y in range(height // 2, height):
         for x in range(width):
-            pixels[x][y] = floor
+            pixels[x][y] = VGA_FLOOR
 
 
 def wall_refresh():

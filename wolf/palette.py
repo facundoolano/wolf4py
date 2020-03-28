@@ -1,4 +1,4 @@
-import sdl2
+from sdl2 import *
 
 COLORS = [
  (  0,  0,  0), (  0,  0, 42), (  0, 42,  0), (  0, 42, 42), ( 42,  0,  0),
@@ -56,4 +56,4 @@ COLORS = [
 ]
 
 # for some reason had to invert the alpha item to get it right
-PALETTE = [sdl2.ext.Color(255, r*255/63, g*255/63, b*255/63) for (r, g, b) in COLORS]
+PALETTE = (SDL_Color * 256)(* [SDL_Color(r*255//63, g*255//63, b*255//63, 0) for r, g, b in COLORS])
