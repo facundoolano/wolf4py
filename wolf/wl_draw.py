@@ -6,22 +6,18 @@ import ctypes
 from palette import PALETTE
 
 def three_d_refresh():
-    # TODO if this proves to be usable, add a context manager for pixel access
-    import id_video_low as id_vl
-    surface = id_vl.lock_surface(id_vl.state.screenBuffer)
+    with id_vh.lock_buffer() as surface:
+        clear_screen(surface)
+        wall_refresh()
+        draw_scaled_images()
+        draw_player_weapon()
 
-    clear_screen(surface)
-    wall_refresh()
-    draw_scaled_images()
-    draw_player_weapon()
-
-    id_vl.unlock_surface(id_vl.state.screenBuffer)
     id_vh.update_screen()
 
 ## internal functions
 
-VGA_FLOOR = 0x19
-VGA_CEILING = [
+VGA_FLOOR_COLOR = 0x19
+VGA_CEILING_COLORS = [
     0x1d,0x1d,0x1d,0x1d,0x1d,0x1d,0x1d,0x1d,0x1d,0xbf,
     0x4e,0x4e,0x4e,0x1d,0x8d,0x4e,0x1d,0x2d,0x1d,0x8d,
     0x1d,0x1d,0x1d,0x1d,0x1d,0x2d,0xdd,0x1d,0x1d,0x98,
@@ -31,7 +27,7 @@ VGA_CEILING = [
 ]
 
 def clear_screen(vbuf):
-    ceiling = VGA_CEILING[wl_game.state.map_index]
+    ceiling = VGA_CEILING_COLORS[wl_game.state.map_index]
 
     # write the upper half of the view with ceiling color
     width = id_vh.state.view_width
@@ -40,7 +36,7 @@ def clear_screen(vbuf):
 
     # move the pointer to the start of the floor and write the floor color
     floor_start = ctypes.cast(vbuf, ctypes.c_voidp).value + width * height // 2
-    ctypes.memset(floor_start, VGA_FLOOR, width * height // 2)
+    ctypes.memset(floor_start, VGA_FLOOR_COLOR, width * height // 2)
 
 def wall_refresh():
     pass

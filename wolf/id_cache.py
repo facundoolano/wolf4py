@@ -62,9 +62,8 @@ def cache_screen(chunk):
     bytes_read, expanded_length = readctype(state.grhandle)
     source = state.grhandle.read(compressed - bytes_read)
 
-    pic = huff_expand(source, expanded_length)
-    # TODO better to return bytes and call the drawing elsewhere
-    vl.draw_surface(pic)
+    return huff_expand(source, expanded_length)
+
 
 # TODO rename load_map
 def cache_map(mapnum):

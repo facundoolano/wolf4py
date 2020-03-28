@@ -30,7 +30,8 @@ def init_game():
 
 # TODO rename, there's no demo here
 def demo_loop():
-    id_ca.cache_screen(gfx.TITLEPIC)
+    title_pic = id_ca.cache_screen(gfx.TITLEPIC)
+    id_vh.draw_surface(title_pic)
     id_vh.update_screen()
 
     id_in.user_input()

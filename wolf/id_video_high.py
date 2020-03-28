@@ -1,6 +1,8 @@
 # From ID_VH.H / ID_VH.C
 # High-level video API
 
+from contextlib import contextmanager
+
 from sdl2 import *
 import id_video_low as id_vl
 import wl_def as de
@@ -28,7 +30,34 @@ def set_view_size(width, height):
     #calculate trace angles and projection constants
     #CalcProjection (FOCALLENGTH);
 
+
+def draw_surface(pic_bytes):
+    with lock_buffer() as surface:
+        pitch = id_vl.state.screenBuffer.contents.pitch
+        scaleFactor = id_vl.state.scaleFactor
+
+        scy = 0
+        for y in range(200):
+            scx = 0
+            for x in range(320):
+                col = pic_bytes[(y * 80 + (x >> 2)) + (x & 3) * 80 * 200]
+                for i in range(scaleFactor):
+                    for j in range(scaleFactor):
+                        surface[(scy + i) * pitch + scx + j] = col
+
+                scx += scaleFactor
+            scy += scaleFactor
+
+
+@contextmanager
+def lock_buffer():
+    surface = id_vl.lock_surface(id_vl.state.screenBuffer)
+
+    try:
+        yield surface
+    finally:
+        id_vl.unlock_surface(id_vl.state.screenBuffer)
+
 def update_screen():
-    # TODO this should probably live in vl itself
     SDL_BlitSurface(id_vl.state.screenBuffer, None, id_vl.state.screen, None);
     id_vl.flip()

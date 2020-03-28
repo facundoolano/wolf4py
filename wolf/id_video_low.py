@@ -61,23 +61,7 @@ def flip():
     SDL_RenderCopy(state.renderer, state.texture, None, None)
     SDL_RenderPresent(state.renderer)
 
-def draw_surface(pic_bytes):
-    surface = lock_surface(state.screenBuffer)
 
-    pitch = state.screenBuffer.contents.pitch
-    scy = 0
-    for y in range(200):
-        scx = 0
-        for x in range(320):
-            col = pic_bytes[(y * 80 + (x >> 2)) + (x & 3) * 80 * 200]
-            for i in range(state.scaleFactor):
-                for j in range(state.scaleFactor):
-                    surface[(scy + i) * pitch + scx + j] = col
-
-            scx += state.scaleFactor
-        scy += state.scaleFactor
-
-    unlock_surface(state.screenBuffer)
 
 def lock_surface(surface):
     if SDL_MUSTLOCK(surface.contents):
