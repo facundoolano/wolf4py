@@ -1,4 +1,5 @@
 import wl_def as de
+from wl_def import Sprites
 import id_video_high as id_vh
 import wl_game
 import ctypes
@@ -44,5 +45,15 @@ def wall_refresh():
 def draw_scaled_images():
     pass
 
+WEAPON_SCALE = [Sprites.KNIFEREADY, Sprites.PISTOLREADY,
+                Sprites.MACHINEGUNREADY, Sprites.CHAINREADY]
+
 def draw_player_weapon():
-    pass
+    shapenum = WEAPON_SCALE[wl_game.state.weapon].value + wl_game.state.weaponframe
+    simple_scale_shape(shapenum)
+
+def simple_scale_shape(shape_num):
+    xcenter = id_vh.state.view_width // 2
+    height = id_vh.state.view_height + 1
+
+    # TODO
