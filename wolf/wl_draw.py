@@ -4,7 +4,7 @@ import id_video_high as id_vh
 import wl_game
 import id_page_manager as id_pm
 import ctypes
-from util import read_word, read_short
+from util import read_word
 
 
 from palette import PALETTE
@@ -55,8 +55,7 @@ def draw_player_weapon(vbuf):
     shapenum = WEAPON_SCALE[wl_game.state.weapon].value + wl_game.state.weaponframe
     simple_scale_shape(vbuf, shapenum)
 
-# TODO used only once and seems similar to scale_shape, see if they can be
-# unified
+# TODO this is pretty ugly, try to improve
 def simple_scale_shape(vbuf, shape_num):
     view_width, view_height = id_vh.state.view_width, id_vh.state.view_height
     xcenter = view_width // 2
@@ -72,7 +71,6 @@ def simple_scale_shape(vbuf, shape_num):
     # cmdptr=(word *) shape->dataofs;
     cmdptr = iter(shape.dataofs)
 
-    # import pdb; pdb.set_trace()
     i = shape.left_pix
     pixcnt = i * pixheight
     rpix = (pixcnt >> 6) + actx
@@ -104,7 +102,7 @@ def simple_scale_shape(vbuf, shape_num):
                 endy = read_word(line, byteorder='little')
                 while endy:
                     endy >>= 1
-                    newstart = read_short(line, byteorder='little')
+                    newstart = read_word(line, byteorder='little', signed=True)
                     starty = read_word(line, byteorder='little') >> 1;
                     j = starty
                     ycnt = j * pixheight
@@ -136,10 +134,3 @@ def simple_scale_shape(vbuf, shape_num):
                     endy = read_word(line, byteorder='little')
                 lpix += 1
         i += 1
-
-
-class CompShape(ctypes.Structure):
-    # table data after dataofs[right_pix-left_pix+1]
-    _fields_ = [('left_pix', ctypes.c_ushort),
-                ('right_pix', ctypes.c_ushort),
-                ('dataofs', ctypes.c_ushort * 64)]

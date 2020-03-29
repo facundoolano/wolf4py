@@ -18,20 +18,14 @@ def readctype(handle, type_=ctypes.c_int32):
         return bytes_read, var
 
 
-def read_word(source, byteorder='big'):
+def read_word(source, byteorder='big', signed=False):
     """
     Extract 2 bytes from the source and return them as word according to the
     given byteorder.
     """
-    pattern = '<H' if byteorder == 'little' else '>H'
-    ch, = struct.unpack_from(pattern, source)
-    source.pop(0)
-    source.pop(0)
-    return ch
-
-# FIXME duplicated
-def read_short(source, byteorder='big'):
-    pattern = '<h' if byteorder == 'little' else '>H'
+    order = '<' if byteorder == 'little' else '>'
+    code = 'h' if signed else 'H'
+    pattern = '{}{}'.format(order, code)
     ch, = struct.unpack_from(pattern, source)
     source.pop(0)
     source.pop(0)
