@@ -18,7 +18,7 @@ WP_CHAINGUN = 3
 
 SPRITE_SCALE_FACTOR = 2
 
-Sprites = Enum('Sprites', [
+SPRITE_CODES = [
     'DEMO', 'DEATHCAM',
     # static sprites
     'STAT_0', 'STAT_1', 'STAT_2', 'STAT_3',
@@ -150,8 +150,9 @@ Sprites = Enum('Sprites', [
     'KNIFEATK4',
     'PISTOLREADY', 'PISTOLATK1', 'PISTOLATK2', 'PISTOLATK3',
     'PISTOLATK4',
-    'MACHINEGUNREADY', 'MACHINEGUNATK1', 'MACHINEGUNATK2,MACHINEGUNATK3',
+    'MACHINEGUNREADY', 'MACHINEGUNATK1', 'MACHINEGUNATK2', 'MACHINEGUNATK3',
     'MACHINEGUNATK4',
     'CHAINREADY', 'CHAINATK1', 'CHAINATK2', 'CHAINATK3',
     'CHAINATK4'
-])
+]
+Sprites = Enum('Sprites', [(v, i) for i, v in enumerate(SPRITE_CODES)])
