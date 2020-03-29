@@ -1,0 +1,47 @@
+import ctypes
+from util import datafile, readctype
+
+class PageState():
+    textures = []
+    sprites = []
+    sounds = []
+
+state = PageState()
+
+def startup():
+    with datafile('VSWAP') as handle:
+        _, chunks_in_file = readctype(handle, ctypes.c_ushort)
+        _, pm_sprite_start = readctype(handle, ctypes.c_ushort)
+        _, pm_sound_start = readctype(handle, ctypes.c_ushort)
+
+        t_page_offsets = ctypes.c_uint32 * (chunks_in_file + 1)
+        _, page_offsets = readctype(handle, t_page_offsets)
+
+        t_page_lengths = ctypes.c_ushort * chunks_in_file
+        _, page_lengths = readctype(handle, t_page_lengths)
+
+        # load textures, sprites and sounds into memory
+        # all fit in memory so we skip the paging mechanism
+        for i in range(chunks_in_file):
+            if not page_offsets[i]:
+                # sparse page
+                continue
+
+            # Use specified page length, when next page is sparse page.
+            # Otherwise, calculate size from the offset difference between this and the next page.
+            size = page_offsets[i + 1] - page_offsets[i]
+            if not page_offsets[i + 1]:
+                size = page_lengths[i]
+
+            handle.seek(page_offsets[i]);
+            value = handle.read(size);
+
+            if i < pm_sprite_start:
+                state.textures.append(value)
+            elif i < pm_sound_start:
+                state.sprites.append(value)
+            else:
+                state.sounds.append(value)
+
+def get_sprite(shape_num):
+    return state.sprites[shape_num]

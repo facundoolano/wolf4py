@@ -56,4 +56,4 @@ def simple_scale_shape(shape_num):
     xcenter = id_vh.state.view_width // 2
     height = id_vh.state.view_height + 1
 
-    # TODO
+    # TODO make t_compshape struct

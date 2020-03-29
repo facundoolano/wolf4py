@@ -9,6 +9,7 @@ import id_cache as id_ca
 import id_video_high as id_vh
 import id_video_low as id_vl
 import id_input as id_in
+import id_page_manager as id_pm
 import wl_game
 import gfxv_wl6 as gfx
 
@@ -22,9 +23,10 @@ def main():
     return 0
 
 def init_game():
+    # TODO replace with regular sdl init
     sdl2.ext.init()
     id_vl.startup()
-
+    id_pm.startup()
     id_ca.startup()
     id_vh.new_view_size()
 

@@ -6,6 +6,7 @@ import ctypes
 import struct
 
 import wl_def as de
+from util import datafile, readctype
 
 NUM_MAPS = 60
 MAP_PLANES = 2
@@ -20,9 +21,6 @@ class MapHeader(ctypes.Structure):
                 ('width', ctypes.c_ushort),
                 ('height', ctypes.c_ushort),
                 ('name', ctypes.c_char * 16)]
-
-def datafile(filename):
-    return open('data/{}.WL6'.format(filename), 'rb')
 
 # TODO change names to more readable ones (and keep the others for reference)
 class CacheState():
@@ -222,16 +220,6 @@ def rlew_expand(source, length):
                 write_word(dest, value)
 
     return dest
-
-
-def readctype(handle, type_=ctypes.c_int32):
-    """
-    Read into a ctypes var of the given type, return the amount of bytes read
-    and its value.
-    """
-    var = type_()
-    bytes_read = handle.readinto(var)
-    return bytes_read, var.value
 
 def read_word(source, byteorder='big'):
     """
