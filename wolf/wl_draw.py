@@ -96,12 +96,14 @@ def simple_scale_shape(vbuf, shape_num):
 
             # cline points to the offset indicated by the next cmdptr item
             # cline=(byte *)shape + *cmdptr;
-            line = shape_bytes[next(cmdptr):]
+            cline = shape_bytes[next(cmdptr):]
             while lpix < rpix:
+                # turn into bytearray to pop when moving the pointer
+                # maybe better to iterate some other way
+                line = bytearray(cline)
                 endy = read_word(line, byteorder='little')
                 while endy:
                     endy >>= 1
-                    # FIXME this new start length is dubious
                     newstart = read_short(line, byteorder='little')
                     starty = read_word(line, byteorder='little') >> 1;
                     j = starty
@@ -126,7 +128,6 @@ def simple_scale_shape(vbuf, shape_num):
                                 j = endy
 
                             while scrstarty < screndy:
-                                # FIXME memset instead of while?
                                 vbuf[vmem_index] = col
                                 vmem_index += vbuf.pitch
                                 scrstarty += 1

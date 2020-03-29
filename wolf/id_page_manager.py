@@ -50,7 +50,6 @@ def startup():
                 bio = BytesIO(value)
                 comp_shape = CompShape()
                 bio.readinto(comp_shape)
-                value = bytearray(value)
                 state.sprites.append((comp_shape, value))
             else:
                 value = handle.read(size)
