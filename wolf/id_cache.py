@@ -3,10 +3,9 @@
 import id_video_low as vl
 import gfxv_wl6 as gfx
 import ctypes
-import struct
 
 import wl_def as de
-from util import datafile, readctype
+from util import datafile, readctype, read_word, write_word
 
 NUM_MAPS = 60
 MAP_PLANES = 2
@@ -220,18 +219,3 @@ def rlew_expand(source, length):
                 write_word(dest, value)
 
     return dest
-
-def read_word(source, byteorder='big'):
-    """
-    Extract 2 bytes from the source and return them as word according to the
-    given byteorder.
-    """
-    pattern = '<H' if byteorder == 'little' else '>H'
-    ch, = struct.unpack_from(pattern, source)
-    source.pop(0)
-    source.pop(0)
-    return ch
-
-def write_word(dest, word):
-    "Add the 2 bytes of the given word to the end of the bytearray."
-    dest.extend(word.to_bytes(length=2, byteorder='big'))

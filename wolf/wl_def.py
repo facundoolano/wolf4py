@@ -16,6 +16,8 @@ WP_PISTOL = 1
 WP_MACHINEGUN = 2
 WP_CHAINGUN = 3
 
+SPRITE_SCALE_FACTOR = 2
+
 Sprites = Enum('Sprites', [
     'DEMO', 'DEATHCAM',
     # static sprites

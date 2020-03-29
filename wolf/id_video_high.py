@@ -33,7 +33,6 @@ def set_view_size(width, height):
 
 def draw_surface(pic_bytes):
     with lock_buffer() as surface:
-        pitch = id_vl.state.screenBuffer.contents.pitch
         scaleFactor = id_vl.state.scaleFactor
 
         scy = 0
@@ -43,7 +42,7 @@ def draw_surface(pic_bytes):
                 col = pic_bytes[(y * 80 + (x >> 2)) + (x & 3) * 80 * 200]
                 for i in range(scaleFactor):
                     for j in range(scaleFactor):
-                        surface[(scy + i) * pitch + scx + j] = col
+                        surface[(scy + i) * surface.pitch + scx + j] = col
 
                 scx += scaleFactor
             scy += scaleFactor
@@ -52,7 +51,8 @@ def draw_surface(pic_bytes):
 @contextmanager
 def lock_buffer():
     surface = id_vl.lock_surface(id_vl.state.screenBuffer)
-
+    # this is a convenient hack, python won't let me yield a tuple
+    surface.pitch = id_vl.state.screenBuffer.contents.pitch
     try:
         yield surface
     finally:

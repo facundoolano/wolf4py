@@ -1,10 +1,17 @@
 import ctypes
 from util import datafile, readctype
+from io import BytesIO
 
 class PageState():
     textures = []
     sprites = []
     sounds = []
+
+class CompShape(ctypes.Structure):
+    # table data after dataofs[right_pix-left_pix+1]
+    _fields_ = [('left_pix', ctypes.c_ushort),
+                ('right_pix', ctypes.c_ushort),
+                ('dataofs', ctypes.c_ushort * 64)]
 
 state = PageState()
 
@@ -33,14 +40,20 @@ def startup():
             if not page_offsets[i + 1]:
                 size = page_lengths[i]
 
-            handle.seek(page_offsets[i]);
-            value = handle.read(size);
+            handle.seek(page_offsets[i])
 
+            value = handle.read(size)
             if i < pm_sprite_start:
                 state.textures.append(value)
             elif i < pm_sound_start:
-                state.sprites.append(value)
+                # for sprites we parse the CompShape struct as well
+                bio = BytesIO(value)
+                comp_shape = CompShape()
+                bio.readinto(comp_shape)
+                value = bytearray(value)
+                state.sprites.append((comp_shape, value))
             else:
+                value = handle.read(size)
                 state.sounds.append(value)
 
 def get_sprite(shape_num):
