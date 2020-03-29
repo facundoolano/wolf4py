@@ -143,7 +143,7 @@ Sprites = Enum('Sprites', [
     'FAT_SHOOT1', 'FAT_SHOOT2', 'FAT_SHOOT3', 'FAT_SHOOT4',
     'FAT_DIE1', 'FAT_DIE2', 'FAT_DIE3', 'FAT_DEAD',
     # bj
-    'BJ_W1, BJ_W2', 'BJ_W3', 'BJ_W4',
+    'BJ_W1', 'BJ_W2', 'BJ_W3', 'BJ_W4',
     'BJ_JUMP1', 'BJ_JUMP2', 'BJ_JUMP3', 'BJ_JUMP4',
     # player attack frames
     'KNIFEREADY', 'KNIFEATK1', 'KNIFEATK2', 'KNIFEATK3',
