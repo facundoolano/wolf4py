@@ -3,6 +3,9 @@ import id_cache as id_ca
 import wl_def as de
 import wl_play as wl_play
 import id_input as id_in
+import id_video_high as id_vh
+import id_video_low as id_vl
+import gfxv_wl6 as gfx
 
 class GameState():
     difficulty = 2
@@ -47,10 +50,12 @@ class GameState():
 state = GameState()
 
 def loop():
-    # TODO this is originally inside the loop
+    draw_play_screen()
+
     setup_game_level()
 
     wl_play.loop()
+
     # TODO this should be a loop, for now just draw once and wait for input to quit
     id_in.user_input()
 
@@ -126,3 +131,8 @@ def setup_game_level():
 def scan_info_plane():
     # TODO this sets up enemies
     pass
+
+def draw_play_screen():
+    scx = (id_vl.state.screenWidth - id_vl.state.scaleFactor * 320) // 2
+    scy = id_vl.state.screenHeight - id_vl.state.scaleFactor * de.STATUS_LINES
+    id_vh.draw_pic_scaled_coord(scx, scy, gfx.STATUSBARPIC)

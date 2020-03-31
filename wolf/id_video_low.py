@@ -16,6 +16,7 @@ class VideoState():
     screen = None
     screenBuffer = None
 
+    # TODO may be better to put this in vl high and pass as parameter
     screenWidth = 640
     screenHeight = 400
     scaleFactor = 2
@@ -60,7 +61,6 @@ def flip():
     SDL_UnlockTexture(state.texture)
     SDL_RenderCopy(state.renderer, state.texture, None, None)
     SDL_RenderPresent(state.renderer)
-
 
 
 def lock_surface(surface):

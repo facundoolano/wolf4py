@@ -3,6 +3,7 @@
 import id_video_low as vl
 import gfxv_wl6 as gfx
 import ctypes
+from io import BytesIO
 
 import wl_def as de
 from util import datafile, readctype, read_word, write_word
@@ -21,12 +22,18 @@ class MapHeader(ctypes.Structure):
                 ('height', ctypes.c_ushort),
                 ('name', ctypes.c_char * 16)]
 
+class Picture(ctypes.Structure):
+    _fields_ = [('width', ctypes.c_int16),
+                ('height', ctypes.c_int16)]
+
 # TODO change names to more readable ones (and keep the others for reference)
 class CacheState():
     # graphics
     grstarts = []
     grhuffman = []
     grhandle = datafile('VGAGRAPH')
+    pictable = []
+    grsegs = []
 
     # map
     RLEWtag = None
@@ -43,24 +50,6 @@ def startup():
 
 def shutdown():
     pass
-
-# TODO rename load_picture
-def cache_screen(chunk):
-    pos = state.grstarts[chunk]
-    next_ = chunk + 1
-    while state.grstarts[next_] == -1:
-        next_ += 1
-    compressed = state.grstarts[next_] - pos
-
-    state.grhandle.seek(pos)
-
-    # first part of the segment contains the expanded length
-    # TODO maybe move into huffexpand?
-    bytes_read, expanded_length = readctype(state.grhandle)
-    source = state.grhandle.read(compressed - bytes_read)
-
-    return huff_expand(source, expanded_length)
-
 
 # TODO rename load_map
 def cache_map(mapnum):
@@ -119,7 +108,73 @@ def setup_graphics_file():
         state.grstarts.append(-1 if val == 0x00FFFFFF else val)
         di += 3
 
-    # FIXME load the pic and sprite headers into the arrays in the data segment
+    # load the pic and sprite headers into the arrays in the data segment
+    state.grhandle.seek(state.grstarts[0])
+    chunkexplen = readctype(state.grhandle)
+    chunkcomplen = state.grstarts[1] - state.grstarts[0] - 4
+    source = state.grhandle.read(chunkcomplen)
+
+    pictable_bytes = huff_expand(source, gfx.NUMPICS * ctypes.sizeof(Picture))
+    pictable_bytes = BytesIO(pictable_bytes)
+    pic = Picture()
+    while pictable_bytes.readinto(pic):
+        state.pictable.append(pic)
+        pic = Picture()
+
+    # preload all graphic chunks to memory
+    # FIXME may not need to save grstarts anymore?
+    for chunk in range(gfx.NUMCHUNKS):
+        if chunk == 135:
+            # this one is not defined
+            continue
+        state.grsegs.append(load_graphic(chunk))
+
+def load_graphic(chunk):
+    pos = state.grstarts[chunk]
+    if not pos:
+        #$FFFFFFFF start is a sparse tile
+        return
+
+    next_ = chunk + 1
+    while state.grstarts[next_] == -1:
+        next_ += 1
+
+    compressed = state.grstarts[next_] - pos
+
+    state.grhandle.seek(pos)
+
+    # TODO maybe move into huffexpand?
+    bytes_read, length = expanded_length(chunk, state.grhandle)
+    source = state.grhandle.read(compressed - bytes_read)
+
+    return huff_expand(source, length)
+
+def expanded_length(chunk, handle):
+    BLOCK = 64
+    MASK_BLOCK = 128
+
+    if chunk >= gfx.STARTTILE8 and chunk < gfx.STARTEXTERNS:
+        # expanded sizes of tile8/16/32 are implicit
+
+        if chunk < gfx.STARTTILE8M:
+            # tile 8s are all in one chunk!
+            expanded = BLOCK * gfx.NUMTILE8
+        elif chunk < gfx.STARTTILE16:
+            expanded = MASKBLOCK * gfx.NUMTILE8M
+        elif chunk < gfx.STARTTILE16M:
+            # all other tiles are one/chunk
+            expanded = BLOCK * 4
+        elif chunk < gfx.STARTTILE32:
+            expanded = MASKBLOCK * 4
+        elif chunk < gfx.STARTTILE32M:
+            expanded = BLOCK * 16
+        else:
+            expanded = MASKBLOCK * 16
+
+        return 0, expanded
+    else:
+        # everything else has an explicit size longword
+        return readctype(state.grhandle)
 
 
 def setup_audio_file():

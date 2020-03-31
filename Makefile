@@ -1,4 +1,4 @@
-.PHONY: venv run
+.PHONY: deps run shell
 
 deps:
 	python3 -m venv venv &&	. venv/bin/activate &&\
@@ -6,3 +6,6 @@ deps:
 
 run: data/VGAHEAD.WL6
 	. venv/bin/activate && python wolf/main.py
+
+shell:
+	. venv/bin/activate && ipython
