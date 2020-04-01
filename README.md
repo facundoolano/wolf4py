@@ -5,3 +5,7 @@ Attempt at migrating [wolf4sdl](https://github.com/facundoolano/wolf4sdl) to Pyt
     $ make deps
     $ cp ~/Path/to/Wolf/Data/*.wl6 data
     $ make run
+
+
+![Title screen](./title.png)
+![In-game screen](./play.png)
