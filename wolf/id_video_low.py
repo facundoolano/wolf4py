@@ -28,9 +28,9 @@ state = VideoState()
 
 def startup():
     # VL_SetVGAPlaneMode in ID_VL.C
-    # initialize sdl video
     width, height = state.screenWidth, state.screenHeight
 
+    SDL_Init(SDL_INIT_VIDEO)
     state.window = SDL_CreateWindow(b'Wolfenstein 3D',
                                     SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                     width, height, SDL_WINDOW_ALLOW_HIGHDPI)
@@ -45,6 +45,12 @@ def startup():
     SDL_SetSurfacePalette(state.screenBuffer, sdlpal);
 
     state.scaleFactor = min(width // 320, height // 200)
+
+
+def shutdown():
+    SDL_DestroyWindow(state.window)
+    SDL_Quit()
+
 
 def flip():
     # http://sandervanderburg.blogspot.ro/2014/05/rendering-8-bit-palettized-surfaces-in.html

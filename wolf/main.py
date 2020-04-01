@@ -17,22 +17,20 @@ import gfxv_wl6 as gfx
 
 def main():
     init_game()
-    demo_loop()
+    run_game()
 
-    quit_()
+    quit_game()
     return 0
 
+
 def init_game():
-    # TODO replace with regular sdl init
-    sdl2.ext.init()
     id_vl.startup()
     id_pm.startup()
     id_ca.startup()
     id_vh.new_view_size()
 
 
-# TODO rename, there's no demo here
-def demo_loop():
+def run_game():
     id_vh.draw_screen(gfx.TITLEPIC)
     id_vh.update_screen()
 
@@ -40,9 +38,9 @@ def demo_loop():
 
     wl_game.loop()
 
-def quit_():
-    SDL_DestroyWindow(id_vl.state.window)
-    SDL_Quit()
+
+def quit_game():
+    id_vl.shutdown()
 
 
 if __name__ == "__main__":
