@@ -33,7 +33,7 @@ def init_game():
 
 # TODO rename, there's no demo here
 def demo_loop():
-    id_vh.draw_pic(gfx.TITLEPIC)
+    id_vh.draw_screen(gfx.TITLEPIC)
     id_vh.update_screen()
 
     id_in.user_input()

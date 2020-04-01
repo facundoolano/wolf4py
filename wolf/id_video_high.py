@@ -33,32 +33,20 @@ def set_view_size(width, height):
     #CalcProjection (FOCALLENGTH);
 
 
-def draw_pic(chunknum):
+def draw_screen(chunknum):
     pic_bytes = id_ca.state.grsegs[chunknum]
-    with lock_buffer() as surface:
-        scaleFactor = id_vl.state.scaleFactor
-
-        scy = 0
-        for y in range(200):
-            scx = 0
-            for x in range(320):
-                col = pic_bytes[(y * 80 + (x >> 2)) + (x & 3) * 80 * 200]
-                for i in range(scaleFactor):
-                    for j in range(scaleFactor):
-                        surface[(scy + i) * surface.pitch + scx + j] = col
-
-                scx += scaleFactor
-            scy += scaleFactor
+    draw_surface(pic_bytes, 0, 0, 320, 200)
 
 
-# FIXME this looks fairly simlar to draw surface above, reuse
 def draw_pic_scaled_coord(destx, desty, chunknum):
     pic = id_ca.state.pictable[chunknum - gfx.STARTPICS]
 
     width, height = pic.width, pic.height
     source = id_ca.state.grsegs[chunknum]
+    draw_surface(source, destx, desty, width, height)
 
-    # FIXME copy paste
+
+def draw_surface(source, destx, desty, width, height):
     with lock_buffer() as surface:
         scaleFactor = id_vl.state.scaleFactor
 
@@ -73,6 +61,7 @@ def draw_pic_scaled_coord(destx, desty, chunknum):
 
                 sci += scaleFactor
             scj += scaleFactor
+
 
 @contextmanager
 def lock_buffer():
