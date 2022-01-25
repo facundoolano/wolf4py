@@ -6,6 +6,7 @@ import id_input as id_in
 import id_video_high as id_vh
 import id_video_low as id_vl
 import gfxv_wl6 as gfx
+from util import read_word
 
 class GameState():
     difficulty = 2
@@ -65,11 +66,12 @@ def setup_game_level():
     id_ca.cache_map(state.map_index)
 
     # copy the wall data to a data segment array
-    tiles = iter(id_ca.state.mapsegs[0])
+    tiles = bytearray(id_ca.state.mapsegs[0])
     for y in range(de.MAP_HEIGHT):
         for x in range(de.MAP_WIDTH):
 
-            tile = next(tiles)
+            tile = read_word(tiles)
+
             if tile < de.AREA_TILE:
                 # solid wall
                 state.tilemap[x][y] = tile
@@ -87,10 +89,10 @@ def setup_game_level():
 
     # TODO reduce duplication?
     # TODO do the init funs above change the tiles? could we init all together?
-    tiles = iter(id_ca.state.mapsegs[0])
+    tiles = bytearray(id_ca.state.mapsegs[0])
     for y in range(de.MAP_HEIGHT):
         for x in range(de.MAP_WIDTH):
-            tile = next(tiles)
+            tile = read_word(tiles)
 
             if tile in [90, 92, 94, 96, 98, 100]:
                 # TODO spawn_door(x, y, 1, (tile - 90) // 2)
